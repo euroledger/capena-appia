@@ -1,0 +1,46 @@
+.right {
+    margin-right: 150px;
+}
+
+img {
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.textbox {
+    border: 1px solid #d9d9d9;
+    max-width: 100%;
+    object-fit: contain;
+    background-color: #f0f0f0;
+    color: #404040;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 20px;
+    margin-top: 12px;
+    text-align: center;
+}
+
+hr {
+    display: block;
+    unicode-bidi: isolate;
+    margin-block-start: 0.5em;
+    margin-block-end: 0.5em;
+    margin-inline-start: auto;
+    margin-inline-end: auto;
+    overflow: hidden;
+    border-style: inset;
+    border-width: 1px;
+}
+p {
+    margin: 10px 0;
+    text-align: left;
+}
+a {
+    color: #3279a6;
+    text-decoration: none;
+    cursor: pointer;
+}
+.btnpanel {
+    margin: 10px 0;
+    text-align: left;
+}
