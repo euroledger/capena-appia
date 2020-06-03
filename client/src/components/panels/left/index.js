@@ -3,7 +3,7 @@ import './left.css'
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-function LeftPanel({ebayScore, ebayUser, ebayDisplay, etsyScore, etsyDisplay}) {
+function LeftPanel({ ebayFeedback, ebayDisplay, etsyFeedback, etsyDisplay }) {
 
     const display = (disp) => {
         if (disp) {
@@ -12,6 +12,8 @@ function LeftPanel({ebayScore, ebayUser, ebayDisplay, etsyScore, etsyDisplay}) {
             return 'none';
         }
     }
+
+    console.log(">>>>>>>>>>>>>>> ETSY FEEDBACK = ", etsyFeedback);
 
     return <div className="left">
         <div className="square">M</div>
@@ -39,12 +41,13 @@ function LeftPanel({ebayScore, ebayUser, ebayDisplay, etsyScore, etsyDisplay}) {
             </div>
         </div>
         <div className="container1">
-            <div style={{display: display(ebayDisplay) }} className="usertext4">eBay Feedback Score: ({ebayScore}) </div>
-            <div style={{display: display(ebayDisplay) }} className="usertext4">eBay User: ({ebayUser}) </div>
+            <div style={{ display: display(ebayDisplay) }} className="usertext4">eBay User: ({ebayFeedback.userName}) </div>
+            <div style={{ display: display(ebayDisplay) }} className="usertext4">eBay Feedback Score: ({ebayFeedback.feedbackScore}) </div>
         </div>
         <div className="container1">
-            
-            <div style={{display: display(etsyDisplay) }} className="usertext4">Etsy Feedback Score: ({etsyScore}) </div>
+            <div style={{ display: display(etsyDisplay) }} className="usertext4">Etsy User: ({etsyFeedback.userName}) </div>
+            <div style={{ display: display(etsyDisplay) }} className="usertext4">Etsy Feedback Count: ({etsyFeedback.feedbackCount}) </div>
+            <div style={{ display: display(etsyDisplay) }} className="usertext4">Etsy Registration: ({etsyFeedback.registrationDate}) </div>
         </div>
     </div>
 }

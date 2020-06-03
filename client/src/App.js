@@ -11,27 +11,38 @@ function App() {
     axios.defaults.baseURL = 'http://localhost:5002/';
     const [ebayReceived, setEbayReceived] = React.useState(false);
     const [etsyReceived, setEtsyReceived] = React.useState(false);
-    const [ebayScore, setEbayScore] = React.useState(0);
-    const [ebayUser, setEbayUser] = React.useState('georicha1336');
-    const [etsyScore, setEtsyScore] = React.useState(0);
+
+    let initialEtsyState =
+    {
+        userName: '',
+        feedbackCount: 0,
+        registrationDate: ''
+    };
+
+    let initialEbayState =
+    {
+        userName: '',
+        feedbackScore: 0
+    };
+
+    const [ebayFeedback, setEbayFeedback] = React.useState(initialEbayState);
+    const [etsyFeedback, setEtsyFeedback] = React.useState(initialEtsyState);
 
     return (
         <div style={{ display: 'absolute', top: '0%' }} className="App">
             <Header></Header>
-            <div style={{marginLeft: '145px', display: 'flex'}}>
-                <LeftPanel 
-                    ebayScore={ebayScore} 
+            <div style={{ marginLeft: '145px', display: 'flex' }}>
+                <LeftPanel
+                    ebayFeedback={ebayFeedback}
                     ebayDisplay={ebayReceived}
-                    ebayUser={ebayUser} 
-                    etsyScore={etsyScore} 
+                    etsyFeedback={etsyFeedback}
                     etsyDisplay={etsyReceived}>
                 </LeftPanel>
-                <RightPanel 
-                    setEbayReceived={setEbayReceived} 
+                <RightPanel
+                    setEbayReceived={setEbayReceived}
                     setEtsyReceived={setEtsyReceived}
-                    setEbayScore={setEbayScore}
-                    setEbayUser={setEbayUser}
-                    setEtsyScore={setEtsyScore}
+                    setEbayFeedback={setEbayFeedback}
+                    setEtsyFeedback={setEtsyFeedback}
                 >
                 </RightPanel>
             </div>

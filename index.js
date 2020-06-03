@@ -25,6 +25,7 @@ app.get('/', function (req, res) {
 let connected = false;
 let connectionId;
 let verificationAccepted = false;
+let platform = "";
 let verifyRecord;
 
 // WEBHOOK ENDPOINT
@@ -40,7 +41,12 @@ app.post('/webhook', async function (req, res) {
             verificationAccepted = true;
             verifyRecord = req.body;
             // HACK TO FILL IN ATTRIBUTES WHILE WE WAIT FOR STREETCRED FIX FOR PROOF REQUEST BUG
-            verifyRecord = { ...verifyRecord, userName: 'georicha1336', FeedbackScore: 0 }
+            if (platform === "ebay") {
+                verifyRecord = { ...verifyRecord, userName: 'georicha1336', feedbackScore: 2 };
+            } else if (platform === "etsy") {
+                verifyRecord = { ...verifyRecord, userName: 'gdvwb7of', feedbackCount: 0, registrationDate: "2018-03-31", PositiveFeedbackPercent: 0};
+            }
+           
             console.log(verifyRecord);
 
             // TBD websocket notification push -> send event containing credential to front end
@@ -69,8 +75,9 @@ app.post('/api/connected', cors(), async function (req, res) {
     res.status(200).send();
 });
 
-app.post('/api/sendverification', cors(), async function (req, res) {
-
+app.post('/api/sendebayverification', cors(), async function (req, res) {
+    platform = "ebay";
+    verificationAccepted = false;
     const params =
     {
         verificationPolicyParameters: {
@@ -90,7 +97,39 @@ app.post('/api/sendverification', cors(), async function (req, res) {
             "revocationRequirement": null
         }
     }
-    console.log("send verification request, connectionId = ", connectionId, "; params = ", params);
+    console.log("send ebay verification request, connectionId = ", connectionId, "; params = ", params);
+    const resp = await client.sendVerificationFromParameters(connectionId, params);
+    // const resp = await client.createVerification();
+
+    res.status(200).send();
+});
+
+app.post('/api/sendetsyverification', cors(), async function (req, res) {
+
+    platform = "etsy";
+    verificationAccepted = false;
+    const params =
+    {
+        verificationPolicyParameters: {
+            "name": "Etsy Proof",
+            "version": "1.0",
+            "attributes": [
+                {
+                    "policyName": "Etsy Proof",
+                    "attributeNames": [
+                        "User Name",
+                        "Feedback Count",
+                        "Registration Date",
+                        "Positive Feedback Percent"
+                    ],
+                    "restrictions": null
+                }
+            ],
+            "predicates": [],
+            "revocationRequirement": null
+        }
+    }
+    console.log("send etsy verification request, connectionId = ", connectionId, "; params = ", params);
     const resp = await client.sendVerificationFromParameters(connectionId, params);
     // const resp = await client.createVerification();
 

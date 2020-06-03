@@ -9,11 +9,13 @@ import QRcode from 'qrcode.react';
 
 
 
-function RightPanel({ setEbayReceived, setEtsyReceived, setEbayScore, setEtsyScore }) {
+function RightPanel({ setEbayReceived, setEtsyReceived, setEbayFeedback, setEtsyFeedback }) {
     const [qr_open, setQROpen] = React.useState(false);
-    const [qr_hasClosed, setQRHasClosed] = React.useState(false);
+    // const [qr_hasClosed, setQRHasClosed] = React.useState(false);
     const [connected, setConnected] = React.useState(false);
     const [invite_url, setInviteUrl] = React.useState('');
+    const [awaiting_ebay, setAwaitingEbay] = React.useState(false);
+    const [awaiting_etsy, setAwaitingEtsy] = React.useState(false);
 
 
     const buttonHandler = () => {
@@ -21,7 +23,12 @@ function RightPanel({ setEbayReceived, setEtsyReceived, setEbayScore, setEtsySco
     }
 
     const linkHandler = (platform) => {
-        sendProofRequest(platform);;
+        console.log("LinkHandler platform = ", platform)
+        if (platform === "ebay") {
+            sendeBayProofRequest();
+        } else if (platform === "etsy") {
+            sendEtsyProofRequest();
+        }
     }
 
     const getInviteConnection = async () => {
@@ -41,23 +48,48 @@ function RightPanel({ setEbayReceived, setEtsyReceived, setEbayScore, setEtsySco
         setConnected(true);
     }
 
-    const sendProofRequest = async (platform) => {
-        console.log("PROOF REQUEST HERE...");
-        const response = await axios.post('/api/sendverification', null);
-
-        console.log("WAITNG FOR DATA ATTRIBUTES...");
+    const sendeBayProofRequest = async () => {
+        setAwaitingEbay(true);
+        console.log("sending ebay verification...");
+        const response = await axios.post('/api/sendebayverification', null);
 
         // wait for the verification webhook to come in from streetcred
         const record = await axios.get('/api/verificationreceived');
 
-        console.log("score = ", record.feedbackScore);
-        console.log("username = ", record.userName);
+        setEbayFeedback(prevState => {
+            return {
+                ...prevState,
+                userName: record.data.userName,
+                feedbackScore: record.data.feedbackScore
+            }
+        });
         setEbayReceived(true);
+        setAwaitingEbay(false);
+    }
+
+    const sendEtsyProofRequest = async () => {
+        setAwaitingEtsy(true);
+        const response = await axios.post('/api/sendetsyverification', null);
+
+        // wait for the verification webhook to come in from streetcred
+        const record = await axios.get('/api/verificationreceived');
+
+        console.log("etsy record = ", record);
+        setEtsyFeedback(prevState => {
+            return {
+                ...prevState,
+                userName: record.data.userName,
+                feedbackCount: record.data.feedbackCount,
+                registrationDate: record.data.registrationDate
+            }
+        });
+        setEtsyReceived(true);
+        setAwaitingEtsy(false);
     }
 
     const closeQR = () => {
         setQROpen(false);
-        setQRHasClosed(true);
+        // setQRHasClosed(true);
     }
 
     const getQRCodeLabel = () => {
@@ -68,6 +100,25 @@ function RightPanel({ setEbayReceived, setEtsyReceived, setEbayScore, setEtsySco
         return connected ? 'block' : 'none';
     }
 
+    const getEbayDisplay = () => {
+        if (awaiting_ebay === false) {
+            return (<a href="#" onClick={() => linkHandler("ebay")}>
+                Import my feedback from Ebay
+            </a>);
+        } else {
+            return (<p style={{ color: '#cc0000' }}>Awaiting Ebay Credential Verification...</p>)
+        }
+    }
+    const getEtsyDisplay = () => {
+        if (awaiting_etsy === false) {
+            return (<a href="#" onClick={() => linkHandler("etsy")}>
+                Import my feedback from Etsy
+            </a>);
+        } else {
+            return (<p style={{ color: '#cc0000' }}>Awaiting Etsy Credential Verification...</p>)
+        }
+    }
+
     return <div className="right">
         <img src={logo} className="right-logo" alt="logo" />
         <div className="textbox">MikeR1126 doesn't have any 5-star feedback for sales on Bonanza.</div>
@@ -75,15 +126,12 @@ function RightPanel({ setEbayReceived, setEtsyReceived, setEbayScore, setEtsySco
         <div className="btnpanel">
             <Button buttonHandler={buttonHandler} connected={connected}></Button>
         </div>
+
         <p style={{ display: getLinkDisplay() }}>
-            <a href="#" onClick={() => linkHandler("ebay")}>
-                Import my feedback from eBay
-            </a>
+            {getEbayDisplay()}
         </p>
         <p style={{ display: getLinkDisplay() }}>
-            <a href="#" onClick={() => linkHandler("etsy")}>
-                Import my feedback from Etsy
-            </a>
+            {getEtsyDisplay()}
         </p>
         <Dialog open={qr_open} onClose={closeQR}>
             <DialogTitle style={{ width: "300px" }}>{getQRCodeLabel()}</DialogTitle>
