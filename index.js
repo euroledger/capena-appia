@@ -7,6 +7,7 @@ const express = require('express');
 const ngrok = require('ngrok');
 const cache = require('./model');
 const utils = require('./utils');
+const localtunnel = require('localtunnel');
 
 require('dotenv').config();
 const { AgencyServiceClient, Credentials } = require("@streetcred.id/service-clients");
@@ -40,16 +41,18 @@ app.post('/webhook', async function (req, res) {
             console.log("cred verificatation notif");
             verificationAccepted = true;
             verifyRecord = req.body;
+
             // HACK TO FILL IN ATTRIBUTES WHILE WE WAIT FOR STREETCRED FIX FOR PROOF REQUEST BUG
             if (platform === "ebay") {
                 verifyRecord = { ...verifyRecord, userName: 'georicha1336', feedbackScore: 2 };
             } else if (platform === "etsy") {
-                verifyRecord = { ...verifyRecord, userName: 'gdvwb7of', feedbackCount: 0, registrationDate: "2018-03-31", PositiveFeedbackPercent: 0};
-            }
-           
+                verifyRecord = { ...verifyRecord, userName: 'gdvwb7of', feedbackCount: 0, registrationDate: "2018-03-31", PositiveFeedbackPercent: 0 };
+            } else if (platform === "uber") {
+                verifyRecord = { ...verifyRecord, driverName: 'Alice Richardson', driverRating: 4.87, AactivationStatus: "active", tripCount: 19876 };
+            } 
             console.log(verifyRecord);
 
-            // TBD websocket notification push -> send event containing credential to front end
+            // TBD possiby use websocket notification push -> send event containing credential to front end
 
         } else {
             console.log("WEBHOOK message_type = ", req.body.message_type);
@@ -78,27 +81,33 @@ app.post('/api/connected', cors(), async function (req, res) {
 app.post('/api/sendebayverification', cors(), async function (req, res) {
     platform = "ebay";
     verificationAccepted = false;
+
     const params =
     {
         verificationPolicyParameters: {
-            "name": "ebay2",
+            "name": "eBay Seller Proof",
             "version": "1.0",
             "attributes": [
-                {
-                    "policyName": "ebay May 20 (2)",
-                    "attributeNames": [
-                        "User Name",
-                        "Feedback Score"
-                    ],
-                    "restrictions": null
-                }
+              {
+                "policyName": "eBay Seller Proof",
+                "attributeNames": [
+                  "Platform",
+                  "User Name",
+                  "Feedback Score",
+                  "Registration Date",
+                  "Negative Feedback Count",
+                  "Positive Feedback Count",
+                  "Positive Feedback Percent"
+                ]
+              }
             ],
-            "predicates": [],
-            "revocationRequirement": null
-        }
+            "predicates": []
+          }
     }
-    console.log("send ebay verification request, connectionId = ", connectionId, "; params = ", params);
     const resp = await client.sendVerificationFromParameters(connectionId, params);
+
+
+
     // const resp = await client.createVerification();
 
     res.status(200).send();
@@ -111,16 +120,48 @@ app.post('/api/sendetsyverification', cors(), async function (req, res) {
     const params =
     {
         verificationPolicyParameters: {
-            "name": "Etsy Proof",
+            "name": "etsy proof",
             "version": "1.0",
             "attributes": [
                 {
-                    "policyName": "Etsy Proof",
+                    "policyName": "etsy proof",
                     "attributeNames": [
                         "User Name",
                         "Feedback Count",
                         "Registration Date",
                         "Positive Feedback Percent"
+                    ],
+                    "restrictions": null
+                }
+            ],
+            "predicates": [],
+            "revocationRequirement": null
+        }
+    }
+    console.log("send etsy verification request, connectionId = ", connectionId, "; params = ", params);
+    const resp = await client.sendVerificationFromParameters(connectionId, params);
+    // const resp = await client.createVerification();
+
+    res.status(200).send();
+});
+
+app.post('/api/senduberverification', cors(), async function (req, res) {
+
+    platform = "uber";
+    verificationAccepted = false;
+    const params =
+    {
+        verificationPolicyParameters: {
+            "name": "uber proof",
+            "version": "1.0",
+            "attributes": [
+                {
+                    "policyName": "uber proof",
+                    "attributeNames": [
+                        "Driver Name",
+                        "Driver Rating",
+                        "Activation Status",
+                        "Trip Count"
                     ],
                     "restrictions": null
                 }
@@ -169,13 +210,25 @@ createTerminus(server, {
     onSignal
 });
 
-const PORT = process.env.PORT || 5002;
-var server = server.listen(PORT, async function () {
-    const url_val = await ngrok.connect(PORT);
+// const PORT = process.env.PORT || 5002;
+var server = server.listen(4002, async function () {
+    const url_val = await ngrok.connect(4002);
+
+    // const tunnel = await localtunnel({ port: PORT });
+
+    // the assigned public url for your tunnel
+
+    // const url_val = "https://excuso.serveo.net";
+
+    // const url_val = "https://cazenove01.pagekite.me/";
+
+
+    // const url_val = "http://4301e127dcf6.ngrok.io";
+
     console.log("============= \n\n" + url_val + "\n\n =========");
 
     // const url_val = process.env.NGROK_URL + "/webhook";
-    // console.log("Using ngrok (webhook) url of ", url_val);
+    console.log("Using webhook url of ", url_val);
     var response = await client.createWebhook({
         webhookParameters: {
             url: url_val + "/webhook",

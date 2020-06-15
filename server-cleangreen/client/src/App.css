@@ -1,0 +1,97 @@
+body {
+    font-family: "Francois One",Arial,Helvetica,FreeSans,sans-serif;
+    color: #404040;
+    font-weight: 900;
+}
+
+.App {
+  text-align: center;
+}
+
+.inputRounded .MuiOutlinedInput-root{
+    border-radius: 0px;
+ }
+ 
+ .greybtn {
+    font-family: "Francois One", Helvetica, Arial, Lucida, sans-serif;
+    /* font-size: 18px; */
+    font-size: 12px;
+    padding: 12px 28px 12px;
+    background: #666666;
+    border-color: transparent;
+    /* box-shadow: none; */
+    color: white;
+    /* margin-top: 9px; */
+    margin-left: 14px;
+    border-radius: 1000px;
+    cursor: pointer;
+    outline: none;
+}
+
+.greenbtn {
+    font-family: "Francois One", Helvetica, Arial, Lucida, sans-serif;
+    /* font-size: 18px; */
+    font-size: 12px;
+    padding: 12px 28px 12px;
+    background-color: #65BB32;
+    border-color: #65BB32;
+    border-color: transparent;
+    box-shadow: none;
+    color: white;
+    border-radius: 1000px;
+    cursor: pointer;
+    outline: none;
+    position: absolute;
+    right: 31%;
+}
+
+ 
+/* .field {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border-radius: 0;
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #CDCDCD;
+    box-shadow: none;
+    color: black;
+    display: block;
+    font-family: 'Francois One',Arial,Helvetica,sans-serif;
+    font-size: 1.125rem;
+    height: 2.5625rem;
+    margin: 0 0 1rem 0;
+    padding: 0.5rem;
+    max-width: 98vw;
+    width: 566px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+} */
+
+/* input {
+    height: auto;
+    min-height: 3.5rem;
+    line-height: normal;
+    padding: 1.6875rem 0.75rem 0.3125rem;
+    position: relative;
+    transition: all 0.4s ease;
+    background-color: transparent;
+    z-index: 2;
+    margin-bottom: 0;
+    margin-top: -90px;
+    font-family: inherit;
+}
+
+.lab {
+    font-family: inherit;
+    color: #505253;
+    cursor: text;
+    display: block;
+    font-size: 21px;
+    font-weight: 100;
+    line-height: 1.5;
+    margin-top: -42px;
+    margin-left: -420px;
+    margin-bottom: 0;
+} */
