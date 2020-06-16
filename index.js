@@ -7,13 +7,22 @@ const express = require('express');
 const ngrok = require('ngrok');
 const cache = require('./model');
 const utils = require('./utils');
-const localtunnel = require('localtunnel');
 
 require('dotenv').config();
 const { AgencyServiceClient, Credentials } = require("@streetcred.id/service-clients");
 
-console.log("ACCESSTOK = ", process.env.ACCESSTOK);
-const client = new AgencyServiceClient(new Credentials(process.env.ACCESSTOK, process.env.SUBKEY));
+console.log("SERVER = ", process.env.SERVER);
+
+let client;
+if (process.env.SERVER === "CGC") {
+    // console.log("ACCESSTOK FOR CLEAN GREEN COMPARE = ", process.env.CG_ACCESSTOK);
+    // console.log("SUBKEY FOR CLEAN GREEN COMPARE = ", process.env.CG_SUBKEY);
+    client = new AgencyServiceClient(new Credentials(process.env.CG_ACCESSTOK, process.env.CG_SUBKEY));
+} else {
+    // console.log("ACCESSTOK FOR BONANZA = ", process.env.ACCESSTOK);
+    client = new AgencyServiceClient(new Credentials(process.env.ACCESSTOK, process.env.SUBKEY));
+}
+
 
 var app = express();
 app.use(cors());
@@ -22,6 +31,9 @@ app.use(parser.json());
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, '/build/index.html'));
 });
+
+console.log("SERVER PORT = ", process.env.SERVERPORT);
+
 
 let connected = false;
 let connectionId;
@@ -39,20 +51,87 @@ app.post('/webhook', async function (req, res) {
         }
         else if (req.body.message_type === 'verification') {
             console.log("cred verificatation notif");
-            verificationAccepted = true;
-            verifyRecord = req.body;
 
-            // HACK TO FILL IN ATTRIBUTES WHILE WE WAIT FOR STREETCRED FIX FOR PROOF REQUEST BUG
-            if (platform === "ebay") {
-                verifyRecord = { ...verifyRecord, userName: 'georicha1336', feedbackScore: 2 };
+            console.log("Getting verification attributes with verification id of ", req.body.object_id);
+
+            let proof = await client.getVerification(req.body.object_id);
+
+            // const data = proof["proof"]["eBay Seller Proof"]["attributes"];
+
+            // TODO package this stuff up into platform-specific modules
+            console.log("Got it! proof data = ", proof["proof"]);
+
+            if (platform === "uber") {
+                const data = proof["proof"]["uber proof"]["attributes"];
+                verifyRecord = {
+                    ...verifyRecord,
+                    driverName: data["Driver Name"],
+                    driverRating: data["Driver Rating"],
+                    activationStatus: data["Activation Status"],
+                    tripCount: data["Trip Count"]
+                };
+            } else if (platform === "ebay") {
+                const data = proof["proof"]["eBay Seller Proof"]["attributes"];
+                verifyRecord = {
+                    ...verifyRecord,
+                    userName: data["User Name"],
+                    feedbackScore: data["Feedback Score"]
+                };
             } else if (platform === "etsy") {
-                verifyRecord = { ...verifyRecord, userName: 'gdvwb7of', feedbackCount: 0, registrationDate: "2018-03-31", PositiveFeedbackPercent: 0 };
-            } else if (platform === "uber") {
-                verifyRecord = { ...verifyRecord, driverName: 'Alice Richardson', driverRating: 4.87, AactivationStatus: "active", tripCount: 19876 };
-            } 
-            console.log(verifyRecord);
+                const data = proof["proof"]["etsy proof"]["attributes"];
+                verifyRecord = {
+                    ...verifyRecord,
+                    userName: data["User Name"],
+                    feedbackCount: data["Feedback Count"],
+                    registrationDate: data["Registration Date"],
+                    PositiveFeedbackPercent: data["Positive Feedback Count"]
+                };
+            }
 
-            // TBD possiby use websocket notification push -> send event containing credential to front end
+
+
+            // the full verification record...
+            // {
+            //     "connectionId": "fab2bff3-702c-41f5-91b5-a012d55e572d",
+            //     "verificationId": "604e8149-cc5e-4e3b-99f5-986179fce190",
+            //     "state": "Accepted",
+            //     "createdAtUtc": "2020-06-16T06:54:43.3524115",
+            //     "updatedAtUtc": "2020-06-16T06:54:58.4218379",
+            //     "isValid": true,
+            //     "verifiedAtUtc": "2020-06-16T06:54:58",
+            //     "proof": {
+            //       "uber proof": {
+            //         "attributes": {
+            //           "Driver Name": "Alice Richardson",
+            //           "Activation Status": "Active",
+            //           "Trip Count": "19876",
+            //           "Driver Rating": "4.87"
+            //         },
+            //         "revealed": false,
+            //         "selfAttested": false,
+            //         "conditional": false
+            //       }
+            //     },
+            //     "policy": {
+            //       "name": "uber proof",
+            //       "version": "1.0",
+            //       "attributes": [
+            //         {
+            //           "policyName": "uber proof",
+            //           "attributeNames": [
+            //             "Driver Name",
+            //             "Driver Rating",
+            //             "Activation Status",
+            //             "Trip Count"
+            //           ]
+            //         }
+            //       ],
+            //       "predicates": []
+            //     }
+            //   }
+            verificationAccepted = true;
+
+            console.log(verifyRecord);
 
         } else {
             console.log("WEBHOOK message_type = ", req.body.message_type);
@@ -88,28 +167,23 @@ app.post('/api/sendebayverification', cors(), async function (req, res) {
             "name": "eBay Seller Proof",
             "version": "1.0",
             "attributes": [
-              {
-                "policyName": "eBay Seller Proof",
-                "attributeNames": [
-                  "Platform",
-                  "User Name",
-                  "Feedback Score",
-                  "Registration Date",
-                  "Negative Feedback Count",
-                  "Positive Feedback Count",
-                  "Positive Feedback Percent"
-                ]
-              }
+                {
+                    "policyName": "eBay Seller Proof",
+                    "attributeNames": [
+                        "Platform",
+                        "User Name",
+                        "Feedback Score",
+                        "Registration Date",
+                        "Negative Feedback Count",
+                        "Positive Feedback Count",
+                        "Positive Feedback Percent"
+                    ]
+                }
             ],
             "predicates": []
-          }
+        }
     }
     const resp = await client.sendVerificationFromParameters(connectionId, params);
-
-
-
-    // const resp = await client.createVerification();
-
     res.status(200).send();
 });
 
@@ -211,10 +285,8 @@ createTerminus(server, {
 });
 
 // const PORT = process.env.PORT || 5002;
-var server = server.listen(4002, async function () {
-    const url_val = await ngrok.connect(4002);
-
-    // const tunnel = await localtunnel({ port: PORT });
+var server = server.listen(process.env.SERVERPORT, async function () {
+    const url_val = await ngrok.connect(process.env.SERVERPORT);
 
     // the assigned public url for your tunnel
 

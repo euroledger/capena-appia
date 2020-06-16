@@ -53,15 +53,19 @@ function App() {
         // wait for the verification webhook to come in from streetcred
         const record = await axios.get('/api/verificationreceived');
 
-        setUberFeedback(prevState => {
-            return {
-                ...prevState,
-                driverRating: record.data.driverRating,
-                tripCount: record.data.tripCount
-            }
-        });
-        setUberReceived(true);
-        setAwaitingUber(false);
+        if (record) {
+            console.log("QUACK got a verification record: ", record)
+            setUberFeedback(prevState => {
+                return {
+                    ...prevState,
+                    driverRating: record.data.driverRating,
+                    tripCount: record.data.tripCount
+                }
+            });
+            getUberDiscount();
+            setUberReceived(true);
+            setAwaitingUber(false);
+        }
     }
 
 
@@ -80,8 +84,41 @@ function App() {
     let initialUberState =
     {
         driverRating: '',
-        TripCount: '',
+        tripCount: '',
+        premium: ''
     };
+
+    const getUberDiscount = () => {
+        console.log("BARK in getUberDiscount")
+        if (uberReceived === false) { 
+            setUberFeedback(prevState => ({
+                ...prevState,
+                premium: '' }
+            ));
+        }
+        if (uberFeedback.tripCount < 1000) {
+            setUberFeedback(prevState => ({
+                ...prevState,
+                premium: '0' }
+            ));
+        }
+        if (uberFeedback.driverRating < 4.0) {
+            setUberFeedback(prevState => ({
+                ...prevState,
+                premium: '0' }
+            ));
+        }
+        if (uberFeedback.driverRating <4.5) {
+            setUberFeedback(prevState => ({
+                ...prevState,
+                premium: '10%' }
+            ));
+        }
+        setUberFeedback(prevState => ({
+            ...prevState,
+            premium: '20%' }
+        ));
+    }
 
     const [uberFeedback, setUberFeedback] = React.useState(initialUberState);
 
@@ -95,10 +132,11 @@ function App() {
                         <div>
                             <TextField
                                 style={{ width: '24vw', height: '3.0rem', marginBottom: '14px' }}
-                                id="driverrating"
+                                id="driverRating"
                                 label="Driver Rating"
                                 variant="filled"
                                 color="#505253"
+                                value={uberFeedback["driverRating"]}
                             />
                         </div>
                         <div>
@@ -108,10 +146,11 @@ function App() {
                     <div>
                         <TextField
                             style={{ width: '37vw', height: '3.0rem', marginLeft: '3px', marginBottom: '14px' }}
-                            id="tripcount"
+                            id="tripCount"
                             label="Trip Count"
                             variant="filled"
                             color="#505253"
+                            value={uberFeedback["tripCount"]}
                         />
                     </div>
                     <div>
@@ -121,6 +160,7 @@ function App() {
                             label="Premium Discount for Uber Drivers"
                             variant="filled"
                             color="#505253"
+                            value = {uberFeedback["premium"]}
                         />
                     </div>
                     <div style={{ marginBottom: '100px' }}>
