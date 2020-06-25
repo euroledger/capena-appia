@@ -13,7 +13,20 @@ function LeftPanel({ ebayFeedback, ebayDisplay, etsyFeedback, etsyDisplay }) {
         }
     }
 
-    console.log(">>>>>>>>>>>>>>> ETSY FEEDBACK = ", etsyFeedback);
+    const getEtsyRevoked = () => {
+        if (etsyFeedback.isValid === false) {
+            return 'block';
+        }
+        return 'none';
+    }
+
+    const getEbayRevoked = () => {
+        console.log("ebayFeedback.isValid = ", ebayFeedback.isValid)
+        if (ebayFeedback.isValid === false) {
+            return 'block';
+        }
+        return 'none';
+    }
 
     return <div className="left">
         <div className="square">M</div>
@@ -43,11 +56,17 @@ function LeftPanel({ ebayFeedback, ebayDisplay, etsyFeedback, etsyDisplay }) {
         <div className="container1">
             <div style={{ display: display(ebayDisplay) }} className="usertext4">eBay User: ({ebayFeedback.userName}) </div>
             <div style={{ display: display(ebayDisplay) }} className="usertext4">eBay Feedback Score: ({ebayFeedback.feedbackScore}) </div>
+            <div style={{ display: display(ebayDisplay) }} className="usertext4">Created At: ({ebayFeedback.createdAt}) </div>
+
+            <div style={{ display: getEbayRevoked() }} className="ebayrevoke">REVOKED</div>
         </div>
         <div className="container1">
             <div style={{ display: display(etsyDisplay) }} className="usertext4">Etsy User: ({etsyFeedback.userName}) </div>
             <div style={{ display: display(etsyDisplay) }} className="usertext4">Etsy Feedback Count: ({etsyFeedback.feedbackCount}) </div>
             <div style={{ display: display(etsyDisplay) }} className="usertext4">Etsy Registration: ({etsyFeedback.registrationDate}) </div>
+            <div style={{ display: display(etsyDisplay) }} className="usertext4">Created At: ({etsyFeedback.createdAt}) </div>
+
+            <div style={{ display: getEtsyRevoked() }}className="etsyrevoke">REVOKED</div>
         </div>
     </div>
 }

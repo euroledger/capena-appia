@@ -42,25 +42,53 @@ function RightPanel({ setEbayReceived, setEtsyReceived, setEbayFeedback, setEtsy
         setQROpen(true);
 
         // wait for the connection webhook to come in from streetcred
-        await axios.post('/api/connected', null);
+        await axios.get('/api/connected', null);
 
         setQROpen(false);
         setConnected(true);
     }
 
+
+    const formatDate = (date) => {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1), // add 1 as January = 0
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
     const sendeBayProofRequest = async () => {
         setAwaitingEbay(true);
         console.log("sending ebay verification...");
-        const response = await axios.post('/api/sendebayverification', null);
+
+        const attributes = [
+            "Platform",
+            "User Name",
+            "Feedback Score",
+            "Registration Date",
+            "Negative Feedback Count",
+            "Positive Feedback Count",
+            "Positive Feedback Percent",
+            "Created At"
+        ];
+        const response = await axios.post('/api/sendebayverification', attributes);
 
         // wait for the verification webhook to come in from streetcred
         const record = await axios.get('/api/verificationreceived');
+
+        const d = formatDate(record.data.createdAt);
 
         setEbayFeedback(prevState => {
             return {
                 ...prevState,
                 userName: record.data.userName,
-                feedbackScore: record.data.feedbackScore
+                feedbackScore: record.data.feedbackScore,
+                isValid: record.data.isValid,
+                createdAt: d
             }
         });
         setEbayReceived(true);
@@ -69,10 +97,21 @@ function RightPanel({ setEbayReceived, setEtsyReceived, setEbayFeedback, setEtsy
 
     const sendEtsyProofRequest = async () => {
         setAwaitingEtsy(true);
-        const response = await axios.post('/api/sendetsyverification', null);
+
+        const attributes = [
+            "User Name",
+            "Feedback Score",
+            "Registration Date",
+            "Positive Feedback Percent",
+            "Created At"
+        ];
+
+        const response = await axios.post('/api/sendetsyverification', attributes);
 
         // wait for the verification webhook to come in from streetcred
         const record = await axios.get('/api/verificationreceived');
+
+        const d = formatDate(record.data.createdAt);
 
         console.log("etsy record = ", record);
         setEtsyFeedback(prevState => {
@@ -80,7 +119,9 @@ function RightPanel({ setEbayReceived, setEtsyReceived, setEbayFeedback, setEtsy
                 ...prevState,
                 userName: record.data.userName,
                 feedbackCount: record.data.feedbackCount,
-                registrationDate: record.data.registrationDate
+                registrationDate: record.data.registrationDate,
+                isValid: record.data.isValid,
+                createdAt: d
             }
         });
         setEtsyReceived(true);

@@ -39,7 +39,7 @@ function App() {
         setQROpen(true);
 
         // wait for the connection webhook to come in from streetcred
-        await axios.post('/api/connected', null);
+        await axios.get('/api/connected', null);
 
         setQROpen(false);
         setConnected(true);

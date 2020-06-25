@@ -16,13 +16,15 @@ function App() {
     {
         userName: '',
         feedbackCount: 0,
-        registrationDate: ''
+        registrationDate: '',
+        isValid: true
     };
 
     let initialEbayState =
     {
         userName: '',
-        feedbackScore: 0
+        feedbackScore: 0,
+        isValid: true
     };
 
     const [ebayFeedback, setEbayFeedback] = React.useState(initialEbayState);

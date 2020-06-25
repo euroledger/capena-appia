@@ -51,6 +51,7 @@ app.post('/webhook', async function (req, res) {
         }
         else if (req.body.message_type === 'verification') {
             console.log("cred verificatation notif");
+            console.log("verification payload", req.body)
 
             console.log("Getting verification attributes with verification id of ", req.body.object_id);
 
@@ -59,32 +60,40 @@ app.post('/webhook', async function (req, res) {
             // const data = proof["proof"]["eBay Seller Proof"]["attributes"];
 
             // TODO package this stuff up into platform-specific modules
-            console.log("Got it! proof data = ", proof["proof"]);
+            console.log("Got it! proof data = ", proof);
+
+            console.log("isValid = ", proof["proof"]["isValid"]);
 
             if (platform === "uber") {
-                const data = proof["proof"]["uber proof"]["attributes"];
+                const data = proof["proof"]["uber driver proof"]["attributes"];
                 verifyRecord = {
                     ...verifyRecord,
                     driverName: data["Driver Name"],
                     driverRating: data["Driver Rating"],
                     activationStatus: data["Activation Status"],
-                    tripCount: data["Trip Count"]
+                    tripCount: data["Trip Count"],
+                    isValid: proof["isValid"],
+                    createdAt: data["Created At"]
                 };
             } else if (platform === "ebay") {
-                const data = proof["proof"]["eBay Seller Proof"]["attributes"];
+                const data = proof["proof"]["eBay Ratings Proof 2"]["attributes"];
                 verifyRecord = {
                     ...verifyRecord,
                     userName: data["User Name"],
-                    feedbackScore: data["Feedback Score"]
+                    feedbackScore: data["Feedback Score"],
+                    isValid: proof["isValid"],
+                    createdAt: data["Created At"]
                 };
             } else if (platform === "etsy") {
-                const data = proof["proof"]["etsy proof"]["attributes"];
+                const data = proof["proof"]["etsy seller proof"]["attributes"];
                 verifyRecord = {
                     ...verifyRecord,
                     userName: data["User Name"],
-                    feedbackCount: data["Feedback Count"],
+                    feedbackCount: data["Feedback Score"],
                     registrationDate: data["Registration Date"],
-                    PositiveFeedbackPercent: data["Positive Feedback Count"]
+                    PositiveFeedbackPercent: data["Positive Feedback Count"],
+                    isValid: proof["isValid"],
+                    createdAt: data["Created At"]
                 };
             }
 
@@ -151,38 +160,48 @@ app.post('/api/connect', cors(), async function (req, res) {
     res.status(200).send({ invite_url: invite.invitation });
 });
 
-app.post('/api/connected', cors(), async function (req, res) {
+app.get('/api/connected', cors(), async function (req, res) {
     console.log("Waiting for connection...");
     await utils.until(_ => connected === true);
     res.status(200).send();
 });
 
+
 app.post('/api/sendebayverification', cors(), async function (req, res) {
     platform = "ebay";
     verificationAccepted = false;
 
+    console.log("new Date() = ", new Date());
+    console.log("date ISO = ", new Date().toISOString());
+    console.log("date UTC = ", new Date().toUTCString());
+
+    let d = new Date();
+    d.setDate(d.getDate() - 6);
+  
+    console.log("date - 3 days = ",  d.toISOString());
+
+    const attributes = req.body;
+
+    console.log("attributes = ", attributes);
+    
     const params =
     {
         verificationPolicyParameters: {
-            "name": "eBay Seller Proof",
+            "name": "eBay Ratings Proof 2",
             "version": "1.0",
             "attributes": [
                 {
-                    "policyName": "eBay Seller Proof",
-                    "attributeNames": [
-                        "Platform",
-                        "User Name",
-                        "Feedback Score",
-                        "Registration Date",
-                        "Negative Feedback Count",
-                        "Positive Feedback Count",
-                        "Positive Feedback Percent"
-                    ]
+                    "policyName": "eBay Ratings Proof 2",
+                    "attributeNames": attributes
                 }
             ],
-            "predicates": []
+            "predicates": [],
+            "revocationRequirement": {
+                "validAt":  d.toISOString()
+            }
         }
     }
+    console.log("PARAMS = ", params);
     const resp = await client.sendVerificationFromParameters(connectionId, params);
     res.status(200).send();
 });
@@ -191,25 +210,32 @@ app.post('/api/sendetsyverification', cors(), async function (req, res) {
 
     platform = "etsy";
     verificationAccepted = false;
+    
+    // let d = new Date();
+    // d.setDate(d.getDate() - 1);
+    // d.setHours(d.getHours() - 3);
+    var d = new Date();
+    d.setHours(d.getHours() - 3);
+    const attributes = req.body;
+
+    console.log("attributes = ", attributes);
+    
     const params =
     {
         verificationPolicyParameters: {
-            "name": "etsy proof",
-            "version": "1.0",
+            "name": "etsy seller proof",
+            "version": "4.0",
             "attributes": [
                 {
-                    "policyName": "etsy proof",
-                    "attributeNames": [
-                        "User Name",
-                        "Feedback Count",
-                        "Registration Date",
-                        "Positive Feedback Percent"
-                    ],
+                    "policyName": "etsy seller proof",
+                    "attributeNames": attributes,
                     "restrictions": null
                 }
             ],
             "predicates": [],
-            "revocationRequirement": null
+            "revocationRequirement": {
+                "validAt": d.toISOString()
+            }
         }
     }
     console.log("send etsy verification request, connectionId = ", connectionId, "; params = ", params);
@@ -223,25 +249,29 @@ app.post('/api/senduberverification', cors(), async function (req, res) {
 
     platform = "uber";
     verificationAccepted = false;
+    const d = new Date();
     const params =
     {
         verificationPolicyParameters: {
-            "name": "uber proof",
+            "name": "uber driver proof",
             "version": "1.0",
             "attributes": [
                 {
-                    "policyName": "uber proof",
+                    "policyName": "uber driver proof",
                     "attributeNames": [
                         "Driver Name",
                         "Driver Rating",
                         "Activation Status",
-                        "Trip Count"
+                        "Trip Count",
+                        "Created At"
                     ],
                     "restrictions": null
                 }
             ],
             "predicates": [],
-            "revocationRequirement": null
+            "revocationRequirement": {
+                "validAt": d.toISOString()
+            }
         }
     }
     console.log("send etsy verification request, connectionId = ", connectionId, "; params = ", params);
@@ -286,14 +316,17 @@ createTerminus(server, {
 
 // const PORT = process.env.PORT || 5002;
 var server = server.listen(process.env.SERVERPORT, async function () {
-    const url_val = await ngrok.connect(process.env.SERVERPORT);
+    // const url_val = await ngrok.connect(process.env.SERVERPORT);
 
     // the assigned public url for your tunnel
 
-    // const url_val = "https://excuso.serveo.net";
+    let url_val = "https://letatio.serveousercontent.com";
+    if (process.env.SERVER === "CGC") {
+        url_val = "https://amicus.serveousercontent.com";
+    } 
+   
 
     // const url_val = "https://cazenove01.pagekite.me/";
-
 
     // const url_val = "http://4301e127dcf6.ngrok.io";
 
