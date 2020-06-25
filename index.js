@@ -316,16 +316,15 @@ createTerminus(server, {
 
 // const PORT = process.env.PORT || 5002;
 var server = server.listen(process.env.SERVERPORT, async function () {
-    // const url_val = await ngrok.connect(process.env.SERVERPORT);
+    const url_val = await ngrok.connect(process.env.SERVERPORT);
 
     // the assigned public url for your tunnel
 
-    let url_val = "https://letatio.serveousercontent.com";
-    if (process.env.SERVER === "CGC") {
-        url_val = "https://amicus.serveousercontent.com";
-    } 
+    // let url_val = "https://letatio.serveousercontent.com";
+    // if (process.env.SERVER === "CGC") {
+    //     url_val = "https://amicus.serveousercontent.com";
+    // } 
    
-
     // const url_val = "https://cazenove01.pagekite.me/";
 
     // const url_val = "http://4301e127dcf6.ngrok.io";
