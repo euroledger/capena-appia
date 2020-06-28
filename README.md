@@ -5,7 +5,7 @@ and then to have those credentials issued as digitally signed transactions on th
 
 The Capena-APPIA demo shows the interaction between the users and those downstream platforms.
 
-This application, the downtream APPIA plugin, consists of two React front end clients, and an expressjs server. 
+This application, the downtream APPIA plugin, consists of two React front end clients, and an expressjs server.
 
 The Aries SSI agent communication uses the Trinsic API.
 
@@ -13,13 +13,10 @@ The Aries SSI agent communication uses the Trinsic API.
 
 The server has routes for webhooks to process connection and proof request confirmations and routes for connecting and requesting credential verifications.
 
-Currently the platforms supported in terms of requesting credential verifications are
-    - Ebay  
-    - Etsy
-    - Uber
+Currently the platforms supported in terms of requesting credential verifications are - Ebay  
+ - Etsy - Uber
 
 Proof requests are passed back to the client in the VerifyRecord.
-
 
 # Install and Run serveo
 
@@ -43,53 +40,28 @@ BONANZA_SERVEO_ADDRESS='https://letatio.serveousercontent.com'
 CGC_SERVEO_ADDRESS='https://increpo.serveousercontent.com'
 
 
+
+### Android
+
+1.  If you are using Android, download the app "Streetcred identity wallet" from Play Store
+
+### See Capena-Delega for how to run that application and issue credentials to the Trinsic mobile wallet app.
+
 # Bonanza Client
 
-    <img src="assets/main.png"
+### Requesting Credential Verification: Bonanza
+
+    <img src="assets/bonanzamainscreen.png"
         alt="Organizations"
-        style="padding-top: 20px; padding-bottom: 20px" 
+        style="padding-top: 20px; padding-bottom: 20px"
         width="600"
         height="400"/>
 
-# GreenCleanCompare Client
-
- 
-### Android
- 1. If you are using Android, download the app "Streetcred identity wallet" from Play Store
-
-
-### See Capena-Delega for how to run that application and issue credentials to the Trinsic mobile wallet app. 
-
-- The first thing to do is register. Click on the toolbar link and fill out the form:
-
-  <img src="assets/registerscreen.png"
-        alt="Organizations"
-        style="padding-top: 20px; padding-bottom: 20px" 
-        width="700"
-        height="400"/>
-
-- If you're using the Streetcred Wallet, make sure your agent is configured to the Sovrin Staging network 
-
-- When you click "Register" a QR Code is displayed. This is the invite to connect. Scan the QR with your mobile wallet
-
-    <img src="assets/qrcode.png"
-        alt="Organizations"
-        style="padding-top: 20px; padding-bottom: 20px" 
-        width="600"
-        height="340"/>
+Connect to Capena.
 
 This is a connection invitation. Webhooks will automatically issue the User Details credential once this is scanned
 
-- Accept the credential offer
-
-- The User (Registration) credentials will be issued (along with an auto generated passcode)
-
-Once this is done, eBay and Etsy credentials can be imported and then issued to the user wallet. 
-
-To login, a QR Code will be issued 
-
-
-### Requesting Credential Verification: Bonanza
+-   Accept the connetion
 
 Click on "connect to capena" and scan the QR Code.
 
@@ -97,9 +69,16 @@ Once the import buttons appear you can import credentials from eBay or Etsy. Acc
 
 ### Requesting Credential Verification: CleanGreenCompar
 
+# GreenCleanCompare Client
+
+<img src="assets/cleangreenmainscreen.png"
+        alt="Organizations"
+        style="padding-top: 20px; padding-bottom: 20px" 
+        width="600"
+        height="400"/>
+
 Click on "Get Uber Ratings".
 
 Once the QR Code appears, scan the code. A proof request appears at the phone. Select the most recent one and hit accept.
 
 The Uber driver ratings will be displayed on the form along with a possible insurance premium discount.
-
