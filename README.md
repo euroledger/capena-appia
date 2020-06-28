@@ -51,11 +51,12 @@ CGC_SERVEO_ADDRESS='https://increpo.serveousercontent.com'
 
 ### Requesting Credential Verification: Bonanza
 
-    <img src="assets/bonanzamainscreen.png"
+<img src="assets/bonanzamainscreen.png"
         alt="Organizations"
-        style="padding-top: 20px; padding-bottom: 20px"
+        style="padding-top: 20px; padding-bottom: 20px" 
         width="600"
         height="400"/>
+
 
 Connect to Capena.
 
