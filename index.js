@@ -215,7 +215,7 @@ app.post('/api/sendetsyverification', cors(), async function (req, res) {
     // d.setDate(d.getDate() - 1);
     // d.setHours(d.getHours() - 3);
     var d = new Date();
-    d.setHours(d.getHours() - 3);
+    // d.setHours(d.getHours() - 3);
     const attributes = req.body;
 
     console.log("attributes = ", attributes);
@@ -316,19 +316,14 @@ createTerminus(server, {
 
 // const PORT = process.env.PORT || 5002;
 var server = server.listen(process.env.SERVERPORT, async function () {
-    const url_val = await ngrok.connect(process.env.SERVERPORT);
+    // const url_val = await ngrok.connect(process.env.SERVERPORT);
 
     // the assigned public url for your tunnel
-
-    // let url_val = "https://letatio.serveousercontent.com";
-    // if (process.env.SERVER === "CGC") {
-    //     url_val = "https://amicus.serveousercontent.com";
-    // } 
+    let url_val = process.env.BONANZA_SERVEO_ADDRESS;
+    if (process.env.SERVER === "CGC") {
+        url_val = process.env.CGC_SERVEO_ADDRESS;
+    } 
    
-    // const url_val = "https://cazenove01.pagekite.me/";
-
-    // const url_val = "http://4301e127dcf6.ngrok.io";
-
     console.log("============= \n\n" + url_val + "\n\n =========");
 
     // const url_val = process.env.NGROK_URL + "/webhook";
