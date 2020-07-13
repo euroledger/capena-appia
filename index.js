@@ -76,7 +76,7 @@ app.post('/webhook', async function (req, res) {
                     createdAt: data["Created At"]
                 };
             } else if (platform === "ebay") {
-                const data = proof["proof"]["eBay Ratings Proof 2"]["attributes"];
+                const data = proof["proof"]["eBay Ratings Policy"]["attributes"];
                 verifyRecord = {
                     ...verifyRecord,
                     userName: data["User Name"],
@@ -172,13 +172,13 @@ app.post('/api/sendebayverification', cors(), async function (req, res) {
     verificationAccepted = false;
 
     console.log("new Date() = ", new Date());
-    console.log("date ISO = ", new Date().toISOString());
-    console.log("date UTC = ", new Date().toUTCString());
+    // console.log("date ISO = ", new Date().toISOString());
+    // console.log("date UTC = ", new Date().toUTCString());
 
     let d = new Date();
-    d.setDate(d.getDate() - 6);
+    // d.setDate(d.getDate() - 6);
   
-    console.log("date - 3 days = ",  d.toISOString());
+    // console.log("date - 3 days = ",  d.toISOString());
 
     const attributes = req.body;
 
@@ -187,22 +187,21 @@ app.post('/api/sendebayverification', cors(), async function (req, res) {
     const params =
     {
         verificationPolicyParameters: {
-            "name": "eBay Ratings Proof 2",
+            "name": "eBay Ratings",
             "version": "1.0",
             "attributes": [
                 {
-                    "policyName": "eBay Ratings Proof 2",
+                    "policyName": "eBay Ratings Policy",
                     "attributeNames": attributes
                 }
             ],
-            "predicates": [],
-            "revocationRequirement": {
-                "validAt":  d.toISOString()
-            }
+            // "revocationRequirement": {
+            //     "validAt":  new Date()
+            // }
         }
     }
     console.log("PARAMS = ", params);
-    const resp = await client.sendVerificationFromParameters(connectionId, params);
+    const resp = client.sendVerificationFromParameters(connectionId, params);
     res.status(200).send();
 });
 
@@ -233,9 +232,9 @@ app.post('/api/sendetsyverification', cors(), async function (req, res) {
                 }
             ],
             "predicates": [],
-            "revocationRequirement": {
-                "validAt": d.toISOString()
-            }
+            // "revocationRequirement": {
+            //     "validAt": d.toISOString()
+            // }
         }
     }
     console.log("send etsy verification request, connectionId = ", connectionId, "; params = ", params);
@@ -268,10 +267,10 @@ app.post('/api/senduberverification', cors(), async function (req, res) {
                     "restrictions": null
                 }
             ],
-            "predicates": [],
-            "revocationRequirement": {
-                "validAt": d.toISOString()
-            }
+            "predicates": []
+            // "revocationRequirement": {
+            //     "validAt": d.toISOString()
+            // }
         }
     }
     console.log("send etsy verification request, connectionId = ", connectionId, "; params = ", params);
@@ -318,19 +317,20 @@ createTerminus(server, {
 var server = server.listen(process.env.SERVERPORT, async function () {
     // const url_val = await ngrok.connect(process.env.SERVERPORT);
 
-    // the assigned public url for your tunnel
-    let url_val = process.env.BONANZA_SERVEO_ADDRESS;
+    // const url_val = process.env.NGROK_URL;
+    // // the assigned public url for your tunnel
+    let url_val = process.env.BONANZA_NGROK_URL + "/webhook";
     if (process.env.SERVER === "CGC") {
-        url_val = process.env.CGC_SERVEO_ADDRESS;
+        url_val = process.env.CLEANGREEN_LOCALHOST_URL + "/webhook";
     } 
    
-    console.log("============= \n\n" + url_val + "\n\n =========");
+    // const url_val = process.env.LOCALHOST_URL + "/webhook";
+    // const url_val = "https://cazenove01.pagekite.me/webhook";
 
-    // const url_val = process.env.NGROK_URL + "/webhook";
     console.log("Using webhook url of ", url_val);
     var response = await client.createWebhook({
         webhookParameters: {
-            url: url_val + "/webhook",
+            url: url_val,
             type: "Notification"
         }
     });
