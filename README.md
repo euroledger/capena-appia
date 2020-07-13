@@ -18,27 +18,50 @@ Currently the platforms supported in terms of requesting credential verification
 
 Proof requests are passed back to the client in the VerifyRecord.
 
-# Install and Run serveo
+# Install and Run ngrok and localhost.run
+2.	Make sure all tunneling services are running and the correct URLs are in the .env files.
 
-TO run both servers start serveo tunneling service twice, once for each. Make sure the service is started for port 5002 (bonanza) first.
+The idea here is that we need two tunneling clients running concurrently, one each for Bonanza and CleanGreen.
 
-ssh -R 80:localhost:5002 serveo.net
+This has proved to be tricky; I have tried many different tunneling services and only found two that are reliable: ngrok and localtunnel.run
 
-You should see:
+https://ngrok.com/
 
-Forwarding HTTP traffic from https://letatio.serveousercontent.com
+http://localhost.run/
 
-ssh -R 80:localhost:3002 serveo.net
+ngrok will be used for Bonanza; localhost.run for cleangreen due to the limitation on the number of concurrent ngrok clients.
 
-You should see:
+First, we need to set up ngrok clients in the ngrok config file:
+Edit the file 
+~/.ngrok2/ngrok.yml
 
-Forwarding HTTP traffic from https://increpo.serveousercontent.com
+Add the following lines:
+authtoken: <YOUR NGROK AUTH TOKEN>
+tunnels:
+  delega:
+    proto: http
+    addr: https://localhost:3002
+  bonanza:
+    proto: http
+    addr: 5002
 
-Make sure these two URLs are the same as in the .env file:
+Where port 5002 is the port for the Bonanza express server.
 
-BONANZA_SERVEO_ADDRESS='https://letatio.serveousercontent.com'
-CGC_SERVEO_ADDRESS='https://increpo.serveousercontent.com'
+Then start the service using:
+./ngrok start -all
 
+For APPIA we also need the localhost.run service to be running. This should be launched with the command
+
+ssh -o ServerAliveInterval=60 -R 80:localhost:4002 ssh.localhost.run
+
+(Where port 4002 is the express port for CleanGreen)
+
+
+Add the two URLs (ngrok and localhost.run to the APPIA .env file:
+
+CLEANGREEN_LOCALHOST_URL='http://mike-d6daf9b7.localhost.run'
+
+BONANZA_NGROK_URL='http://c023412b06da.ngrok.io'
 
 
 ### Android
